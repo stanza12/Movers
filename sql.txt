@@ -1,0 +1,192 @@
+CREATE DATABASE SRMOVERS;
+GO
+USE "SRMOVERS";
+
+
+
+CREATE TABLE RoleTable (
+    RoleID INT IDENTITY(1,1) PRIMARY KEY,
+    RoleName VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Staff (
+    StaffID INT IDENTITY(1,1) PRIMARY KEY,
+    Forename VARCHAR(255) NOT NULL,
+    Surname VARCHAR(255) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    TelephoneNumber VARCHAR(20) NOT NULL,
+    RoleID INT,
+    Status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (RoleID) REFERENCES RoleTable(RoleID)
+);
+
+CREATE TABLE StaffRoles (
+    StaffID INT,
+    RoleID INT,
+    PRIMARY KEY (StaffID, RoleID),
+    FOREIGN KEY (StaffID) REFERENCES Staff(StaffID) ON DELETE CASCADE,
+    FOREIGN KEY (RoleID) REFERENCES RoleTable(RoleID) ON DELETE CASCADE
+);
+
+CREATE TABLE StaffContract (
+
+StaffID INT PRIMARY KEY,
+
+Hours CHAR(10) NOT NULL  
+
+FOREIGN KEY (StaffID) REFERENCES Staff(StaffID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Customer (
+
+CustomerID INT PRIMARY KEY IDENTITY(1,1),
+Forename VARCHAR(255) NOT NULL,
+
+Surname VARCHAR(255) NOT NULL,
+ 
+Email VARCHAR(255) NOT NULL,
+
+TelephoneNumber VARCHAR(20) NOT NULL,
+
+BillingAddress VARCHAR(500) NOT NULL
+);
+
+CREATE TABLE Login (
+
+StaffID INT PRIMARY KEY,
+
+PasswordHash VARCHAR(255) NOT NULL, 
+FOREIGN KEY (StaffID) REFERENCES Staff(StaffID) ON DELETE CASCADE
+);
+
+
+CREATE TABLE JobRequestForm (
+    JobRequestID INT PRIMARY KEY IDENTITY(1,1), 
+    CustomerID INT NOT NULL, 
+    Address VARCHAR(100) NOT NULL, 
+    NewAddress VARCHAR(100) NOT NULL, 
+    RequestDate DATE NOT NULL, 
+    TimeOfDay CHAR(2) CHECK (TimeOfDay IN ('AM', 'PM')),
+    SpecialRequirements VARCHAR(500), 
+    SelfPacking BIT NOT NULL, 
+    NumberOfBoxes INT NOT NULL, 
+    SpecialistItems VARCHAR(500), 
+    UnpackingRequired BIT NOT NULL, 
+    FurnitureDisassembly BIT NOT NULL, 
+    FurnitureReassembly BIT NOT NULL, 
+    BookingDate DATE NOT NULL, 
+    Accepted BIT NOT NULL, 
+    FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID) ON DELETE CASCADE 
+);
+
+CREATE TABLE RoomsAtDestination (
+
+RoomID INT PRIMARY KEY,
+
+JobRequestID INT FOREIGN KEY REFERENCES JobRequestForm(JobRequestID),
+  
+RoomName VARCHAR(255) NOT NULL
+
+);
+
+
+CREATE TABLE VANS (
+    VanID INT PRIMARY KEY,
+    StaffID INT,
+    VanType VARCHAR(255),
+    Status VARCHAR(50),
+    FOREIGN KEY (StaffID) REFERENCES STAFF(StaffID) 
+);
+
+CREATE TABLE JOB (
+    JobID INT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    JobRequestID INT NOT NULL,
+    VanID INT NOT NULL,
+    JobStatus VARCHAR(50) NOT NULL,
+    JobDate DATE NOT NULL,
+    AmPm VARCHAR(2) NOT NULL,
+    BookingDate DATE NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES CUSTOMER(CustomerID),
+    FOREIGN KEY (JobRequestID) REFERENCES JOBREQUESTFORM(JobRequestID),
+    FOREIGN KEY (VanID) REFERENCES VANS(VanID)
+);
+
+CREATE TABLE ESTIMATES (
+    EstimateID INT PRIMARY KEY,
+    JobID INT NOT NULL,
+    EstimatedCost DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (JobID) REFERENCES JOB(JobID) ON DELETE CASCADE
+);
+
+CREATE TABLE MOVEITEMS (
+ItemID INT PRIMARY KEY,
+ 
+JobRequestID INT FOREIGN KEY REFERENCES JOBREQUESTFORM(JobRequestID),
+
+RoomID INT FOREIGN KEY REFERENCES ROOMSATDESTINATION(RoomID),
+
+ItemName VARCHAR(255) NOT NULL,
+    
+DisassemblyRequired BIT NOT NULL,
+    
+ReassemblyRequired BIT NOT NULL
+);
+
+SET IDENTITY_INSERT Staff ON;
+INSERT INTO CUSTOMER (Forename, Surname, Email, TelephoneNumber, BillingAddress) VALUES
+('John', 'Doe', 'john.doe@example.com', '1234567890', '123 Main St, Anytown, USA'),
+('Jane', 'Smith', 'jane.smith@example.com', '0987654321', '456 Oak St, Othertown, USA'),
+('Alice', 'Johnson', 'alice.johnson@example.com', '5551234567', '789 Pine St, Sometown, USA'),
+('Bob', 'Brown', 'bob.brown@example.com', '5559876543', '321 Maple St, Thistown, USA');
+
+
+
+
+ INSERT INTO JOBREQUESTFORM (JobRequestID, CustomerID, Address, NewAddress, RequestDate, TimeOfDay, SpecialRequirements, SelfPacking, NumberOfBoxes, SpecialistItems, UnpackingRequired, FurnitureDisassembly, FurnitureReassembly, BookingDate, Accepted) VALUES
+(1, 1, '123 Main St, Anytown, USA', '456 Elm St, Anytown, USA', '2024-10-01', 'AM', 'Need fragile items handled with care', 0, 10, 1, 1, 1, 1, '2024-09-25', 1),
+(2, 2, '456 Oak St, Othertown, USA', '789 Cedar St, Othertown, USA', '2024-10-05', 'PM', 'None', 1, 5, 0, 0, 0, 0, '2024-09-28', 1),
+(3, 3, '789 Pine St, Sometown, USA', '101 Birch St, Sometown, USA', '2024-10-10', 'AM', 'Need help with disassembly', 0, 15, 1, 1, 1, 1, '2024-10-01', 0);
+
+
+INSERT INTO JOB (JobID, CustomerID, JobRequestID, VanID, JobStatus, JobDate, AmPm, BookingDate) VALUES
+(1, 1, 1, 1, 'Scheduled', '2024-10-01', 'AM', '2024-09-25'),
+(2, 2, 2, 2, 'In Progress', '2024-10-05', 'PM', '2024-09-28'),
+(3, 3, 3, 3, 'Completed', '2024-10-10', 'AM', '2024-10-01');
+
+
+SET IDENTITY_INSERT Staff OFF;
+SET IDENTITY_INSERT RoleTable ON;
+INSERT INTO RoleTable (RoleID, RoleName) VALUES
+(1, 'Manager'),
+(2, 'Assistant Manager'),
+(4, 'Receptionist'),
+(5, 'Driver'),
+(6, 'Assistant Driver');
+
+SET IDENTITY_INSERT RoleTable OFF;
+
+INSERT INTO STAFF (StaffID, Forename, Surname, Email, TelephoneNumber, RoleID, Status) VALUES
+(1, 'Mike', 'Wilson', 'mike.wilson@example.com', '5550001111', 1, 'Active'),
+(2, 'Sara', 'Miller', 'sara.miller@example.com', '5552223333', 2, 'Active'),
+(3, 'Tom', 'Taylor', 'tom.taylor@example.com', '5554445555', 3, 'Inactive'),
+(4, 'Laura', 'Clark', 'laura.clark@example.com', '5556667777', 4, 'Active');
+
+INSERT INTO STAFFROLES (StaffID, RoleID) VALUES
+(1, 1),  
+(2, 2),  
+(3, 3), 
+(4, 4);  
+
+INSERT INTO LOGIN (StaffID, PasswordHash) VALUES
+(1, 'hashed_password1'),  
+(2, 'hashed_password2'),
+(3, 'hashed_password3'),
+(4, 'hashed_password4');
+
+INSERT INTO StaffContract(StaffID, Hours) VALUES
+(1, '0210102102'),  
+(2, '0201002001'),
+(3, '0002020202'),
+(4, '0101010101');
