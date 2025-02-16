@@ -1,0 +1,1 @@
+This is my coursework for my A2 software systems development project. It uses visual studio with C# code front-end and stores all data in a separate database using SQL management server. The prject is not fully complete due to the fact that i am still working on finishing it before the examination boards deadline.
